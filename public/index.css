@@ -1,0 +1,70 @@
+body {
+  overflow: hidden;
+}
+.terminal {
+  border: #000 solid 4px;
+  font-family: "Lucida Console", 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', 'source-code-pro', monospace;
+  font-size: 9pt;
+  color: #d0d0d0;
+  background: #000;
+}
+.reverse-video {
+  color: #000;
+  background: #f0f0f0;
+}
+#control {
+  background-color: #e8e8e8;
+  margin: 0;
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  right: 4px;
+  height: 50px;
+}
+#editor { 
+  margin: 0;
+  position: absolute;
+  top: 58px;
+  bottom: 58px;
+  overflow: hidden;
+  left: 258px;
+  right: 4px;
+}
+#shell { 
+  margin: 0;
+  border: 1px solid black;
+  position: absolute;
+  top: 58px;
+  bottom: 58px;
+  overflow: hidden;
+  left: 900px;
+  right: 4px;
+}
+#solution {
+  background-color: #e8e8e8;
+  margin: 0;
+  position: absolute;
+  top: 58px;
+  overflow: auto;
+  bottom: 58px;
+  left: 4px;
+  width: 250px;
+}
+#status {
+  background-color: #e8e8e8;
+  margin: 0;
+  position: absolute;
+  overflow: hidden;
+  height: 50px;
+  right: 4px;
+  bottom: 4px;
+  left: 4px;
+}
+ul.jqueryFileTree {
+  font-family: "Lucida Console", 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', 'source-code-pro', monospace;
+  font-size: 9pt;
+}
+.ace_editor  {
+  font-family: "Lucida Console", 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', 'source-code-pro', monospace;
+  font-size: 9pt;
+}

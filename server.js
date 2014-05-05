@@ -40,7 +40,7 @@ fs.writeFile = function(path, data, encoding_, callback) {
 var cfg = {
   host: "0.0.0.0",
   port: 8081,
-  path: "./bin/public",
+  path: "./public",
   maxFileSize: 1 * 1024 * 1024
 };
 var config = {
