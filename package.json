@@ -1,0 +1,9 @@
+{
+  "name": "ide",
+  "description": "web based ide for node.js",
+  "version": "0.0.1",
+  "private": true,
+  "dependencies": {
+    "pty.js": "0.2.4"
+  }
+}
