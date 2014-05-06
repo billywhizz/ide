@@ -57,20 +57,6 @@ var services = {
       var peer = this;
       peer.setNoDelay(true);
       peer.binaryType = 2;
-      peer.term = pty.spawn(config.shell || "bash", config.args, {
-        name: config.term || "xterm",
-        cols: config.cols || 80,
-        rows: config.rows || 24,
-        cwd: process.env.HOME,
-        env: process.env
-      });
-      peer.term.peer = peer;
-      peer.term.on("data", function(data) {
-        peer.send(data);
-      });
-      peer.term.on("close", function() {
-        console.error("terminal.close");
-      });
     },
     onClose: function() {
       console.error("service.close");
@@ -79,13 +65,41 @@ var services = {
       console.error(e);
     },
     onMessage: function() {
+      var peer = this;
       var b = this.message.body;
       var m;
       if(b[0] === "{" && b[1] === "\"") {
-        m = JSON.parse(b.toString());
-        return this.term.resize(m.cols, m.rows);
+        try {
+          m = JSON.parse(b.toString());
+          switch(m.type) {
+            case "resize":
+              return this.term.resize(m.cols, m.rows);
+              break;
+            case "command":
+              var term = pty.spawn(m.command.split(" ")[0], m.command.split(" ").slice(1), {
+                name: config.term || "xterm",
+                cols: config.cols || 80,
+                rows: config.rows || 24,
+                cwd: cfg.path + m.cwd,
+                env: process.env
+              });
+              term.on("data", function(data) {
+                peer.send(data);
+              });
+              term.on("close", function() {
+                console.error("terminal.close");
+                term.destroy();
+              });
+              term.on("exit", function() {
+                console.error("terminal.exit");
+              });
+              break;
+          }
+        }
+        catch(ex) {
+          console.error(ex);
+        }
       }
-      this.term.write(this.message.body);
     }
   }
 };

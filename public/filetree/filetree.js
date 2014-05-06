@@ -34,12 +34,13 @@ if(jQuery) (function($){
 								$(this).parent().find('UL').slideUp();
 								$(this).parent().removeClass('expanded').addClass('collapsed');
 							}
+							h("dir", $(this).attr('rel'));
 						} else {
 							h("file", $(this).attr('rel'));
 						}
 						return false;
 					});
-					if( o.folderEvent.toLowerCase != 'click' ) $(t).find('LI A').bind('click', function() { h("dir", $(this).attr('rel')); return false; });
+					//if( o.folderEvent.toLowerCase != 'click' ) $(t).find('LI A').bind('click', function() { h("dir", $(this).attr('rel')); return false; });
 				}
 				$(this).html('<ul class="jqueryFileTree start"><li class="wait">' + o.loadMessage + '<li></ul>');
 				showTree( $(this), escape(o.root) );

@@ -4,10 +4,13 @@ var splitPath = function(filename) {
   return splitPathRe.exec(filename).slice(1);
 };
 var term;
+var socket;
+var editor;
+var cmdline;
 function newTerminal(cols, rows, cb) {
   var container;
   var cell;
-  var socket = new WebSocket("ws://" + document.location.host + "/", "oneflow");
+  socket = new WebSocket("ws://" + document.location.host + "/", "oneflow");
   socket.binaryType = "arraybuffer";
   socket.onopen = function() {
     container = document.createElement("div");
@@ -17,20 +20,13 @@ function newTerminal(cols, rows, cb) {
       cols: cols,
       rows: rows,
       parent: container,
-      handler: function(data) {
-        
-      }
+      handler: function(data) {}
     });
     term.cell = cell;
     term.container = container;
     term.socket = socket;
-    term.on("data", function(data) {
-      socket.send(data);
-    });
     term.on("title", function(title) {
       document.title = title;
-    });
-    term.on("focus", function() {
     });
     term.on("close", function() {
       console.log("close: " + container.id);
@@ -38,13 +34,13 @@ function newTerminal(cols, rows, cb) {
     term.brokenBold = true;
     term.open();
     shell.appendChild(container);
-    setTimeout(term.focus, 100);
     if(cb) cb(term);
   };
   socket.onclose = function() {
     if(term) {
       term.destroy();
       shell.removeChild(container);
+      newTerminal(80, 40);
     }
   };
   socket.onmessage = function(event) {
@@ -60,7 +56,7 @@ $(document).ready( function() {
     }
   }, false);
   var lang = require("ace/ext/modelist")
-  var editor = ace.edit("editor");
+  editor = ace.edit("editcontainer");
   editor.setTheme("ace/theme/xcode");
   editor.getSession().setUseSoftTabs(true);
   editor.getSession().setTabSize(2);
@@ -72,8 +68,8 @@ $(document).ready( function() {
       req.onreadystatechange = function(e) {
         switch(req.readyState) {
           case 4:
-            if(req.status === 200) {
-              console.log(editor.filename + " deleted");
+            if(req.status === 201) {
+              console.log(req.cwd + " created");
             }
             else {
               console.log("bad http status: " + req.status);
@@ -81,7 +77,8 @@ $(document).ready( function() {
             break;s
         }
       };
-      req.open("MKCOL", prompt("Please enter the directory name"), true);
+      req.cwd = prompt("Please enter the directory name", editor.cwd);
+      req.open("MKCOL", req.cwd, true);
       req.send();
     },
     readOnly: false
@@ -91,7 +88,7 @@ $(document).ready( function() {
     bindKey: {win: 'Ctrl-N',  mac: 'Command-N'},
     exec: function(editor) {
       editor.setValue("");
-      editor.filename = document.title = prompt("Please enter the file name");
+      editor.filename = document.title = prompt("Please enter the file name", editor.cwd);
     },
     readOnly: false
   });
@@ -103,8 +100,8 @@ $(document).ready( function() {
       req.onreadystatechange = function(e) {
         switch(req.readyState) {
           case 4:
-            if(req.status === 200) {
-              console.log(editor.filename + " saved");
+            if(req.status === 201) {
+              console.log(req.filename + " saved");
             }
             else {
               console.log("bad http status: " + req.status);
@@ -112,6 +109,7 @@ $(document).ready( function() {
             break;s
         }
       };
+      req.filename = editor.filename;
       req.open("PUT", editor.filename, true);
       req.send(editor.getValue());
     },
@@ -126,7 +124,7 @@ $(document).ready( function() {
         switch(req.readyState) {
           case 4:
             if(req.status === 200) {
-              console.log(editor.filename + " deleted");
+              console.log(req.filename + " deleted");
             }
             else {
               console.log("bad http status: " + req.status);
@@ -134,6 +132,7 @@ $(document).ready( function() {
             break;s
         }
       };
+      req.filename = editor.filename;
       req.open("DELETE", editor.filename, true);
       req.send();s
     },
@@ -148,7 +147,7 @@ $(document).ready( function() {
         switch(req.readyState) {
           case 4:
             if(req.status === 200) {
-              console.log(editor.filename + " deleted");
+              console.log(req.cwd + " deleted");
             }
             else {
               console.log("bad http status: " + req.status);
@@ -156,14 +155,31 @@ $(document).ready( function() {
             break;
         }
       };
+      req.cwd = editor.cwd;
       req.open("DELETE", editor.cwd, true);
       req.send();
     },
     readOnly: false
   });
   editor.cwd = "/user/";
+  cmdline = new ShellX({
+    "container": $("#commander"),
+    "class": "shell"
+  }, function(command) {
+    switch(command) {
+      default:
+        socket.send(JSON.stringify({
+          type: "command",
+          command: command,
+          cwd: editor.cwd
+        }));
+        break;
+    }
+  });
   $('#solution').fileTree({
-    root: '/user/'
+    root: '/user/',
+    expandSpeed: -1,
+    collapseSpeed: -1
   }, function(type, name) {
     if(type === "dir") {
       editor.cwd = name;
@@ -188,4 +204,5 @@ $(document).ready( function() {
     req.open("GET", name, true);
     req.send();
   });
+  newTerminal(80, 60);
 });
